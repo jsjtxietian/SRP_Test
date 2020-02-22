@@ -14,8 +14,5 @@ public class CustomRenderPipeline : RenderPipeline
         }
     }
 
-    protected override RenderPipeline CreatePipeline()
-    {
-        return new CustomRenderPipeline();
-    }
+    
 }
