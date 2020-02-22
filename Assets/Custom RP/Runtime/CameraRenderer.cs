@@ -3,8 +3,10 @@ using UnityEngine.Rendering;
 
 public class CameraRenderer
 {
+    static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
     ScriptableRenderContext context;
     const string bufferName = "Render Camera";
+    CullingResults cullingResults;
 
     CommandBuffer buffer = new CommandBuffer
     {
@@ -17,14 +19,55 @@ public class CameraRenderer
     {
         this.context = context;
         this.camera = camera;
+
+        if (!Cull())
+        {
+            return;
+        }
         Setup();
         DrawVisibleGeometry();
         Submit();
     }
 
+    //culling those that fall outside of the view frustum of the camera.
+    bool Cull()
+    {
+        if (camera.TryGetCullingParameters(out ScriptableCullingParameters p))
+        {
+            cullingResults = context.Cull(ref p);
+            return true;
+        }
+        return false;
+    }
+
+
     void DrawVisibleGeometry()
     {
+        //determine whether orthographic or distance-based sorting applies.
+        var sortingSettings = new SortingSettings(camera)
+        {
+            criteria = SortingCriteria.CommonOpaque
+        };
+        var drawingSettings = new DrawingSettings(
+            unlitShaderTagId, sortingSettings
+        );
+        var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
+
+        context.DrawRenderers(
+            cullingResults, ref drawingSettings, ref filteringSettings
+        );
+
+
         context.DrawSkybox(camera);
+
+        //transparent
+        sortingSettings.criteria = SortingCriteria.CommonTransparent;
+        drawingSettings.sortingSettings = sortingSettings;
+        filteringSettings.renderQueueRange = RenderQueueRange.transparent;
+
+        context.DrawRenderers(
+            cullingResults, ref drawingSettings, ref filteringSettings
+        );
     }
 
     void Submit()
@@ -36,13 +79,15 @@ public class CameraRenderer
 
     void Setup()
     {
+        context.SetupCameraProperties(camera);
+        buffer.ClearRenderTarget(true, true, Color.clear);
         buffer.BeginSample(bufferName);//inject profiler samples, which will show up both in the profiler and the frame debugger
         ExecuteBuffer();
-        context.SetupCameraProperties(camera);
     }
 
-    void ExecuteBuffer () {
-		context.ExecuteCommandBuffer(buffer);
-		buffer.Clear();
-	}
+    void ExecuteBuffer()
+    {
+        context.ExecuteCommandBuffer(buffer);
+        buffer.Clear();
+    }
 }
