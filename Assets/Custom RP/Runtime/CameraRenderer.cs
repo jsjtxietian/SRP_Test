@@ -20,6 +20,7 @@ public partial class CameraRenderer
     {
         this.context = context;
         this.camera = camera;
+        PrepareBuffer();
         PrepareForSceneWindow();
         if (!Cull())
         {
@@ -75,7 +76,7 @@ public partial class CameraRenderer
 
     void Submit()
     {
-        buffer.EndSample(bufferName);
+        buffer.EndSample(SampleName);
         ExecuteBuffer();
         context.Submit();
     }
@@ -83,8 +84,16 @@ public partial class CameraRenderer
     void Setup()
     {
         context.SetupCameraProperties(camera);
-        buffer.ClearRenderTarget(true, true, Color.clear);
-        buffer.BeginSample(bufferName);//inject profiler samples, which will show up both in the profiler and the frame debugger
+        CameraClearFlags flags = camera.clearFlags;
+        //ClearRenderTarget requires at least three arguments. 
+        //The first two indicate whether the depth and color data should be cleared
+        // The third argument is the color used to clearing
+        buffer.ClearRenderTarget(
+            flags <= CameraClearFlags.Depth,
+            flags == CameraClearFlags.Color,
+            flags == CameraClearFlags.Color ?
+                camera.backgroundColor.linear : Color.clear);
+        buffer.BeginSample(SampleName);//inject profiler samples, which will show up both in the profiler and the frame debugger
         ExecuteBuffer();
     }
 
