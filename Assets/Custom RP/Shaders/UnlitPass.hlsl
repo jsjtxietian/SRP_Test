@@ -2,7 +2,10 @@
 #define CUSTOM_UNLIT_PASS_INCLUDED
 
 #include "../ShaderLibrary/Common.hlsl"
-float4 _BaseColor;
+
+CBUFFER_START(UnityPerMaterial)
+	float4 _BaseColor;
+CBUFFER_END
 
 
 float4 UnlitPassVertex (float3 positionOS: POSITION) : SV_POSITION {
