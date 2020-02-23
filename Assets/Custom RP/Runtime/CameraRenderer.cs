@@ -16,7 +16,8 @@ public partial class CameraRenderer
 
     Camera camera;
 
-    public void Render(ScriptableRenderContext context, Camera camera)
+    public void Render(ScriptableRenderContext context, Camera camera,
+                        bool useDynamicBatching, bool useGPUInstancing)
     {
         this.context = context;
         this.camera = camera;
@@ -27,7 +28,7 @@ public partial class CameraRenderer
             return;
         }
         Setup();
-        DrawVisibleGeometry();
+        DrawVisibleGeometry(useDynamicBatching,useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
         Submit();
@@ -45,7 +46,7 @@ public partial class CameraRenderer
     }
 
 
-    void DrawVisibleGeometry()
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
     {
         //determine whether orthographic or distance-based sorting applies.
         var sortingSettings = new SortingSettings(camera)
@@ -54,7 +55,11 @@ public partial class CameraRenderer
         };
         var drawingSettings = new DrawingSettings(
             unlitShaderTagId, sortingSettings
-        );
+        )
+        {
+            enableDynamicBatching = useDynamicBatching,
+			enableInstancing = useGPUInstancing
+        };
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
 
         context.DrawRenderers(
