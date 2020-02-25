@@ -4,7 +4,9 @@ using UnityEngine;
 public class MeshBall : MonoBehaviour
 {
 
-    static int baseColorId = Shader.PropertyToID("_BaseColor");
+    static int baseColorId = Shader.PropertyToID("_BaseColor"),
+    metallicId = Shader.PropertyToID("_Metallic"),
+        smoothnessId = Shader.PropertyToID("_Smoothness");
 
     [SerializeField]
     Mesh mesh = default;
@@ -15,7 +17,8 @@ public class MeshBall : MonoBehaviour
     Matrix4x4[] matrices = new Matrix4x4[1023];
     Vector4[] baseColors = new Vector4[1023];
     MaterialPropertyBlock block;
-
+    float[] metallic = new float[1023],
+        smoothness = new float[1023];
 
     void Awake()
     {
@@ -33,6 +36,8 @@ public class MeshBall : MonoBehaviour
                 new Vector4(
                     Random.value, Random.value, Random.value,
                     Random.Range(0.5f, 1f));
+            metallic[i] = Random.value < 0.25f ? 1f : 0f;
+            smoothness[i] = Random.Range(0.05f, 0.95f);
         }
     }
 
@@ -42,6 +47,8 @@ public class MeshBall : MonoBehaviour
         {
             block = new MaterialPropertyBlock();
             block.SetVectorArray(baseColorId, baseColors);
+            block.SetFloatArray(metallicId, metallic);
+            block.SetFloatArray(smoothnessId, smoothness);
         }
         //mesh, sub-mesh index zero, material, matrices array, 
         //the amount of elements, and property block as arguments
