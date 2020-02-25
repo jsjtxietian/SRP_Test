@@ -22,6 +22,7 @@ public class CustomRenderPipeline : RenderPipeline
         //all their data gets cached on the GPU and each draw call only has to 
         //contain an offset to the correct memory location
 		GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+        GraphicsSettings.lightsUseLinearIntensity = true;
         
 	}
 }
