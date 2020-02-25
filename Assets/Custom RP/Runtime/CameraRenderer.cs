@@ -4,8 +4,8 @@ using UnityEngine.Rendering;
 public partial class CameraRenderer
 {
     static ShaderTagId
-		unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
-		litShaderTagId = new ShaderTagId("CustomLit");
+        unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
+        litShaderTagId = new ShaderTagId("CustomLit");
 
     ScriptableRenderContext context;
     const string bufferName = "Render Camera";
@@ -17,6 +17,7 @@ public partial class CameraRenderer
     };
 
     Camera camera;
+    Lighting lighting = new Lighting();
 
     public void Render(ScriptableRenderContext context, Camera camera,
                         bool useDynamicBatching, bool useGPUInstancing)
@@ -30,7 +31,8 @@ public partial class CameraRenderer
             return;
         }
         Setup();
-        DrawVisibleGeometry(useDynamicBatching,useGPUInstancing);
+        lighting.Setup(context);
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
         Submit();
@@ -60,7 +62,7 @@ public partial class CameraRenderer
         )
         {
             enableDynamicBatching = useDynamicBatching,
-			enableInstancing = useGPUInstancing
+            enableInstancing = useGPUInstancing
         };
         drawingSettings.SetShaderPassName(1, litShaderTagId);
 
